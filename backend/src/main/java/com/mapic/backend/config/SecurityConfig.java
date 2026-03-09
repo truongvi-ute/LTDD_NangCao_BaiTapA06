@@ -34,6 +34,8 @@ public class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/provinces/**").permitAll()
+                .requestMatchers("/api/admin/**").permitAll()  // TODO: Protect in production
                 .requestMatchers("/uploads/**").permitAll()
                 .anyRequest().authenticated()
             )

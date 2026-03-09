@@ -27,4 +27,8 @@ public class MomentDto {
     private Long commentCount;
     private Long saveCount;
     private LocalDateTime createdAt;
+    
+    // Province information
+    private String provinceName;
+    private String provinceCode;
 }
