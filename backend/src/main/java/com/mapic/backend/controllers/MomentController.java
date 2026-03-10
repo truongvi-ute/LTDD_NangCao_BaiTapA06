@@ -91,6 +91,43 @@ public class MomentController {
         }
     }
     
+    @PostMapping(value = "/upload-image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadMomentImage(
+            @RequestParam("image") MultipartFile image,
+            Authentication authentication) {
+        try {
+            // Validate image
+            if (image.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse<>(false, "Vui lòng chọn ảnh", null));
+            }
+            
+            // Validate file type
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse<>(false, "File phải là ảnh", null));
+            }
+            
+            // Validate file size (max 10MB)
+            if (image.getSize() > 10 * 1024 * 1024) {
+                return ResponseEntity.badRequest()
+                        .body(new ApiResponse<>(false, "Kích thước ảnh không được vượt quá 10MB", null));
+            }
+            
+            String imageUrl = momentService.uploadMomentImage(image);
+            
+            Map<String, String> data = new HashMap<>();
+            data.put("imageUrl", imageUrl);
+            
+            return ResponseEntity.ok(new ApiResponse<>(true, "Upload ảnh thành công", data));
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Lỗi: " + e.getMessage(), null));
+        }
+    }
+    
     @GetMapping("/my-moments")
     public ResponseEntity<ApiResponse<List<MomentDto>>> getMyMoments(Authentication authentication) {
         try {

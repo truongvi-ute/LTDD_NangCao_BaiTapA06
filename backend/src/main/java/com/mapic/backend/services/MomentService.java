@@ -385,6 +385,10 @@ public class MomentService {
         }
     }
     
+    public String uploadMomentImage(MultipartFile file) {
+        return uploadImage(file);
+    }
+    
     private MomentDto convertToDto(Moment moment) {
         MomentDto dto = new MomentDto();
         dto.setId(moment.getId());
