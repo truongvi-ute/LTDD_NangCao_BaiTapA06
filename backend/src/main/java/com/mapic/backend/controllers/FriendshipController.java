@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 
 @RestController
 @RequestMapping("/api/friends")
@@ -117,17 +118,21 @@ public class FriendshipController {
     }
     
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<Map<String, Object>>> searchUser(
-            @RequestParam String username,
+    public ResponseEntity<ApiResponse<List<Map<String, Object>>>> searchUser(
+            @RequestParam String name,
             Authentication authentication) {
         try {
-            User user = friendshipService.searchUserByUsername(username);
+            List<User> users = friendshipService.searchUserByName(name);
             
-            Map<String, Object> data = new HashMap<>();
-            data.put("id", user.getId());
-            data.put("username", user.getUsername());
-            data.put("name", user.getName());
-            data.put("avatarUrl", UserService.buildAvatarUrl(user.getProfile() != null ? user.getProfile().getAvatarUrl() : null));
+            List<Map<String, Object>> data = new ArrayList<>();
+            for (User user : users) {
+                Map<String, Object> userMap = new HashMap<>();
+                userMap.put("id", user.getId());
+                userMap.put("username", user.getUsername());
+                userMap.put("name", user.getName());
+                userMap.put("avatarUrl", UserService.buildAvatarUrl(user.getProfile() != null ? user.getProfile().getAvatarUrl() : null));
+                data.add(userMap);
+            }
             
             return ResponseEntity.ok(new ApiResponse<>(true, "Tìm thấy người dùng", data));
         } catch (Exception e) {

@@ -69,7 +69,7 @@ public class MomentService {
         
         Moment savedMoment = momentRepository.save(moment);
         
-        return convertToDto(savedMoment);
+        return convertToDto(savedMoment, userId);
     }
     
     public List<MomentDto> getUserMoments(Long userId) {
@@ -80,7 +80,7 @@ public class MomentService {
                 user, MomentStatus.ACTIVE);
         
         return moments.stream()
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, userId))
                 .collect(Collectors.toList());
     }
     
@@ -93,7 +93,7 @@ public class MomentService {
                 user, MomentStatus.ACTIVE, pageable);
         
         List<MomentDto> momentDtos = momentPage.getContent().stream()
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, userId))
                 .collect(Collectors.toList());
         
         return new PageResponse<>(
@@ -138,7 +138,7 @@ public class MomentService {
         }
         
         return moments.stream()
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, viewerId))
                 .collect(Collectors.toList());
     }
     
@@ -155,7 +155,7 @@ public class MomentService {
         // If viewing own profile, show all moments
         if (targetUserId.equals(viewerId)) {
             momentDtos = momentPage.getContent().stream()
-                    .map(this::convertToDto)
+                    .map(m -> convertToDto(m, viewerId))
                     .collect(Collectors.toList());
         } else {
             // Check if they are friends
@@ -166,13 +166,13 @@ public class MomentService {
             if (isFriend) {
                 // Friends can see all moments
                 momentDtos = momentPage.getContent().stream()
-                        .map(this::convertToDto)
+                        .map(m -> convertToDto(m, viewerId))
                         .collect(Collectors.toList());
             } else {
                 // Non-friends only see public moments
                 momentDtos = momentPage.getContent().stream()
                         .filter(Moment::getIsPublic)
-                        .map(this::convertToDto)
+                        .map(m -> convertToDto(m, viewerId))
                         .collect(Collectors.toList());
             }
         }
@@ -192,7 +192,7 @@ public class MomentService {
         List<Moment> moments = momentRepository.findMomentsForUserFeed(userId, MomentStatus.ACTIVE);
         
         return moments.stream()
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, userId))
                 .collect(Collectors.toList());
     }
     
@@ -201,7 +201,7 @@ public class MomentService {
         Page<Moment> momentPage = momentRepository.findMomentsForUserFeed(userId, MomentStatus.ACTIVE, pageable);
         
         List<MomentDto> momentDtos = momentPage.getContent().stream()
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, userId))
                 .collect(Collectors.toList());
         
         return new PageResponse<>(
@@ -221,7 +221,7 @@ public class MomentService {
         // Only return public moments for explore feature
         return moments.stream()
                 .filter(Moment::getIsPublic)
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, null))
                 .collect(Collectors.toList());
     }
     
@@ -232,7 +232,7 @@ public class MomentService {
         // Only return public moments for explore feature
         List<MomentDto> momentDtos = momentPage.getContent().stream()
                 .filter(Moment::getIsPublic)
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, null))
                 .collect(Collectors.toList());
         
         return new PageResponse<>(
@@ -255,7 +255,7 @@ public class MomentService {
             // Only return public moments for explore feature
             return moments.stream()
                     .filter(Moment::getIsPublic)
-                    .map(this::convertToDto)
+                    .map(m -> convertToDto(m, null))
                     .collect(Collectors.toList());
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("Invalid category: " + categoryStr);
@@ -272,7 +272,7 @@ public class MomentService {
             // Only return public moments for explore feature
             List<MomentDto> momentDtos = momentPage.getContent().stream()
                     .filter(Moment::getIsPublic)
-                    .map(this::convertToDto)
+                    .map(m -> convertToDto(m, null))
                     .collect(Collectors.toList());
             
             return new PageResponse<>(
@@ -298,7 +298,7 @@ public class MomentService {
         // Filter out deleted moments
         return moments.stream()
                 .filter(m -> m.getStatus() == MomentStatus.ACTIVE)
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, userId))
                 .collect(Collectors.toList());
     }
     
@@ -312,7 +312,7 @@ public class MomentService {
         // Filter out deleted moments
         List<MomentDto> momentDtos = momentPage.getContent().stream()
                 .filter(m -> m.getStatus() == MomentStatus.ACTIVE)
-                .map(this::convertToDto)
+                .map(m -> convertToDto(m, userId))
                 .collect(Collectors.toList());
         
         return new PageResponse<>(
@@ -342,7 +342,7 @@ public class MomentService {
             }
         }
         
-        return convertToDto(moment);
+        return convertToDto(moment, userId);
     }
     
     @Transactional
@@ -389,7 +389,7 @@ public class MomentService {
         return uploadImage(file);
     }
     
-    private MomentDto convertToDto(Moment moment) {
+    public MomentDto convertToDto(Moment moment, Long viewerId) {
         MomentDto dto = new MomentDto();
         dto.setId(moment.getId());
         dto.setAuthorId(moment.getAuthor().getId());

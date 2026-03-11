@@ -156,8 +156,7 @@ public class FriendshipService {
         return result;
     }
     
-    public User searchUserByUsername(String username) {
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+    public List<User> searchUserByName(String name) {
+        return userRepository.findByNameContainingIgnoreCase(name);
     }
 }
